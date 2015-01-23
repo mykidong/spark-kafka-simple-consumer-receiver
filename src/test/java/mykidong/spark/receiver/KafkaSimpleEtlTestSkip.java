@@ -52,6 +52,15 @@ import scala.Tuple2;
 
 import com.google.common.collect.ImmutableMap;
 
+/**
+ * 
+ * Kafka ETL Example Test Case.
+ * 
+ * It is demonstrated that the messages consumed from kafka using Spark Kafka Receiver written by Kafka Simple Consumer API are saved as avro files onto hdfs.
+ * 
+ *
+ */
+
 public class KafkaSimpleEtlTestSkip {	
 	
 	@Before
@@ -68,14 +77,14 @@ public class KafkaSimpleEtlTestSkip {
 	public void run() throws Exception {
 		
 		// kafka broker host list.
-		String brokers = "polaris005-dev.gslook.com,polaris006-dev.gslook.com";
+		String brokers = "spark005-dev.mykidong.com,spark006-dev.mykidong.com";
 		String[] brokerTokens = brokers.split(",");
 		List<String> brokerList = Arrays.asList(brokerTokens);
 		
 		// kafka broker port.
 		int brokerPort = 9092;
 		
-		String zookeeperQuorumList = "polaris003-dev.gslook.com:2181,polaris004-dev.gslook.com:2181,polaris005-dev.gslook.com:2181";
+		String zookeeperQuorumList = "spark003-dev.mykidong.com:2181,spark004-dev.mykidong.com:2181,spark005-dev.mykidong.com:2181";
 		
 		// znode base path.
 		String zookeeperBasePath = "/kafka-simple-etl";
@@ -104,15 +113,15 @@ public class KafkaSimpleEtlTestSkip {
 		sparkConf.setMaster("local[50]");	
 		sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");	
 		sparkConf.set("spark.streaming.blockInterval", "200");
-		sparkConf.setAppName("KafkaSimpleReceiverTestSkip");	
+		sparkConf.setAppName("KafkaSimpleEtlTestSkip");	
 		
 		JavaSparkContext ctx = new JavaSparkContext(sparkConf);
 		
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/HH");
 		String dateFormatted = sdf.format(new Date());		
 		
-		
-		// 먼저, 해당 시간대 avro file 생성시 생성된 uuid directory 중 _SUCCESS file 이 없는 directory 는 삭제, 즉 processing 중 실패일경우로 간주하고 삭제함.
+	
+		// first, delete all the directories in which no _SUCCESS file exists, that is, it is assumed that the spark etl job failed while saving avro onto hdfs.
 		FileSystem fs = FileSystem.get(ctx.hadoopConfiguration());
 		
 		for(String eventType : topicTokens)
@@ -139,17 +148,16 @@ public class KafkaSimpleEtlTestSkip {
 									break;
 								}
 							}
-						}
-						
-						// 성공 file 이 없을 경우 uuid directory 삭제.
+						}						
+					
 						if(!success)
 						{
 							fs.delete(status.getPath(), true);
-							System.out.println("실패 Path: [" + status.getPath().toString() + "] 임으로 삭제!!!");
+							System.out.println("Failure Path: [" + status.getPath().toString() + "] is deleted!!!");
 						}
 						else
 						{
-							System.out.println("성공 Path: [" + status.getPath().toString() + "] 임으로 삭제해서는 안됨!!!");
+							System.out.println("Success Path: [" + status.getPath().toString() + "] not deleted!!!");
 						}
 					}
 				}	
@@ -201,10 +209,10 @@ public class KafkaSimpleEtlTestSkip {
 		
 		for(String eventType : topicTokens)
 	    {	    
-			// eventType 별 filtering.
+			// filtering by eventType
 	    	JavaPairDStream<String, EventStream> filteredEventStream = eventTypeEventStream.filter(new FilterEvent(eventType));	  
 	    
-	    	// eventType 별 event 를 avro 형태로 hdfs 에 저장.
+	    	// save messages as avro onto hdfs.
 	    	filteredEventStream.foreachRDD(new SaveAvroToHdfs(eventType, outputPathBase, dateFormatted, confMap));
 	    }		
 		
@@ -277,7 +285,7 @@ public class KafkaSimpleEtlTestSkip {
 		public Void call(JavaPairRDD<String, EventStream> pairRdd, Time time)
 				throws Exception {	
 			
-			// rdd count 가 0 일 경우 아무런 일을 하지 않음.
+			// when rdd count is 0, just return.
 			if(pairRdd.count() == 0)
 			{
 				return null;
@@ -294,14 +302,14 @@ public class KafkaSimpleEtlTestSkip {
 			conf.set("avro.output.schema", getSchemaString());
 			conf.set("avro.output.codec", "snappy");				
 			
-			// out path 는 yyyy/MM/dd/HH/<uuid> 형식.
+			// out path format is yyyy/MM/dd/HH/<uuid>.
 			// /polaris/kafka-etl/destination/relevance-event/hourly
 			String outPath = this.outputPath + "/" + eventType + "/hourly/" + dateFormatted + "/" + UUID.randomUUID().toString();
 		
 			// save avro to hdfs.
 			avroRdd.saveAsHadoopFile(outPath, new AvroWrapper<GenericRecord>().getClass(), NullWritable.class, AvroOutputFormat.class, conf);						
 		
-			// hadoop configuration 을 build.
+			// build hadoop configuration from map.
 			Configuration hadoopConf = new Configuration();
 			for(String key : this.confMap.keySet())
 			{
@@ -321,12 +329,12 @@ public class KafkaSimpleEtlTestSkip {
 					{
 						if(status.isFile())
 						{
-							// success file 존재.
+							// success file exists.
 							if(status.getPath().toString().endsWith("_SUCCESS"))
 							{
 								successFileExists = true;
 								
-								System.out.println("_SUCCESS file 발견: [" + status.getPath().toString() + "]");
+								System.out.println("_SUCCESS file found: [" + status.getPath().toString() + "]");
 								
 								break;
 							}
@@ -344,8 +352,8 @@ public class KafkaSimpleEtlTestSkip {
 			}
 			
 			if(successFileExists)
-			{
-				// znode process path 에 process offset 을 저장.
+			{				
+				// update process offset to znode path.
 				pairRdd.mapToPair(new EventStreamPair()).groupByKey().mapPartitionsToPair(new MaxOffsetEventStream()).foreach(new UpdateMaxOffset());	
 			}
 			
@@ -373,8 +381,8 @@ public class KafkaSimpleEtlTestSkip {
 			@Override
 			public void call(Tuple2<String, EventStream> t)
 					throws Exception {
-				
-				// znode process path 에 process offset 을 저장.					
+			
+				// update process offset onto znode.
 				EventStream maxEventStream = t._2;		
 				
 				long currentProcessOffset = maxEventStream.getOffset();
@@ -390,16 +398,16 @@ public class KafkaSimpleEtlTestSkip {
 				String processPath = KafkaSimpleConsumer.buildProcessPath(maxEventStream.getZookeeperBasePath(), maxEventStream.getClientId(), maxEventStream.getTopic(), maxEventStream.getPartition());
 				
 				ZookeeperState zookeeperState = new ZookeeperState(maxEventStream.getZookeeperQuorumList());
-				
-				// 기존 process offset 을 얻기 위해 zk 에서 read.
+			
+				// read old process offset from zk.
 				Map<Object, Object> processData = zookeeperState.readJSON(processPath);		
 				long oldProcessOffset = 0;
 				if(processData != null)
 				{
 					oldProcessOffset = (Long) processData.get("offset");				
 				}	
-				
-				// 기존 process offset 보다 현재 저장할 process offset 이 크기 때문에 zk 에 process offset 을 update 함.
+			
+				// if current process offset is greater than the old process offset, update the current one onto znode.
 				if(oldProcessOffset < currentProcessOffset)
 				{						
 					zookeeperState.writeTransactionalJSON(processPath, data);
@@ -407,7 +415,7 @@ public class KafkaSimpleEtlTestSkip {
 				}
 				else
 				{
-					System.out.println("기존 process offset [" + oldProcessOffset + "] 보다 현재 process offset [" + currentProcessOffset + "] 이 크지 않기 때문에 zk 에 update 하지 않음...");	
+					System.out.println("old process offset [" + oldProcessOffset + "] is greater than current process offset [" + currentProcessOffset + "] ...");	
 				}
 			}
 		}
@@ -433,14 +441,14 @@ public class KafkaSimpleEtlTestSkip {
 						esList.add(es);					
 					}
 					
-					// offset 별로 DESC Sorting.
+					// offset DESC Sorting.
 					Collections.sort(esList, new Comparator<EventStream>() {
 						@Override
 						public int compare(EventStream es1, EventStream es2) {						
 							return (int)(es2.getOffset() - es1.getOffset());
 						}});			
-					
-					// 가장 offset 이 큰 EventStream 을 선택.
+				
+					// select just the entry having max. offset.
 					tupleList.add(new Tuple2(key, esList.get(0)));					
 				}						
 				
