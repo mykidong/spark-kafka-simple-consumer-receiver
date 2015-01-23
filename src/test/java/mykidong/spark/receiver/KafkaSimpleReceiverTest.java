@@ -38,14 +38,14 @@ public class KafkaSimpleReceiverTest {
 	public void run() throws Exception {
 		
 		// kafka broker host list.
-		String brokers = "polaris005-dev.gslook.com,polaris006-dev.gslook.com";
+		String brokers = "spark005-dev.mykidong.com,spark006-dev.mykidong.com";
 		String[] brokerTokens = brokers.split(",");
 		List<String> brokerList = Arrays.asList(brokerTokens);
 		
 		// kafka broker port.
 		int brokerPort = 9092;
 		
-		String zookeeperQuorumList = "polaris003-dev.gslook.com:2181,polaris004-dev.gslook.com:2181,polaris005-dev.gslook.com:2181";
+		String zookeeperQuorumList = "spark003-dev.mykidong.com:2181,spark004-dev.mykidong.com:2181,spark005-dev.mykidong.com:2181";
 		
 		// znode base path.
 		String zookeeperBasePath = "/kafka-simple-receiver";
