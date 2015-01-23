@@ -103,7 +103,6 @@ public class KafkaSimpleEtlTestSkip {
 		SparkConf sparkConf = new SparkConf();		
 		sparkConf.setMaster("local[50]");	
 		sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");	
-		sparkConf.set("spark.kryo.registrator", "com.gsshop.polaris.component.EventStreamRegistrator");
 		sparkConf.set("spark.streaming.blockInterval", "200");
 		sparkConf.setAppName("KafkaSimpleReceiverTestSkip");	
 		
