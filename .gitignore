@@ -1,0 +1,10 @@
+.classpath
+.project
+.settings
+*/.settings
+target/
+*/target
+
+
+service/service-admin/WebContent/META-INF/MANIFEST.MF
+service/service-admin/WebContent/WEB-INF/web.xml

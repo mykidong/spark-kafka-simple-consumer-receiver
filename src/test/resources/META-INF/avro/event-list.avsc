@@ -1,0 +1,31 @@
+{
+  "type": "record",
+  "name": "EventList",
+  "namespace": "com.gsshop.polaris.domain.event.schema", 
+  "fields": [
+    {
+      "name": "eventType",
+      "type": "string"
+    },
+    {
+      "name": "value",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "Event",
+          "fields": [
+            {
+              "name": "eventType",
+              "type": "string"
+            },
+            {
+              "name": "msg",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
