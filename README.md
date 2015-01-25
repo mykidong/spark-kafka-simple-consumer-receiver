@@ -32,9 +32,6 @@ In KafkaSimpleReceiverTest.java, the following line should be changed to suit yo
 		
 		// kafka message fetch size.
 		int fetchSizeBytes = 800000;	
-		
-		// micro batch cycle duration.
-		long duration = 20000;
 
 
 DStream generated from Kafka Receiver looks like this:
