@@ -1,4 +1,4 @@
-package mykidong.spark.receiver;
+package spark.streaming.receiver.kafka;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

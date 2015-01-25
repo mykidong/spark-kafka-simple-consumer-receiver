@@ -1,4 +1,4 @@
-package mykidong.spark.receiver;
+package spark.streaming.receiver.kafka;
 
 import java.nio.charset.Charset;
 import java.util.Map;

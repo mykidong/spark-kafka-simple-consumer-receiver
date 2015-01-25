@@ -1,4 +1,4 @@
-package mykidong.spark.receiver;
+package spark.streaming.receiver.kafka;
 
 import org.apache.spark.storage.StorageLevel;
 import org.apache.spark.streaming.receiver.Receiver;

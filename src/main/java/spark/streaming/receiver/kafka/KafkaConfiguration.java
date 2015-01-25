@@ -1,4 +1,4 @@
-package mykidong.spark.receiver;
+package spark.streaming.receiver.kafka;
 
 import java.io.Serializable;
 import java.util.List;
