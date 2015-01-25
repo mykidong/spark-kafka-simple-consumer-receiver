@@ -1,8 +1,5 @@
 package spark.streaming.receiver.kafka;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -38,9 +35,7 @@ public class KafkaSimpleReceiverTest {
 		
 		// kafka broker host list.
 		String brokers = "spark005-dev.mykidong.com,spark006-dev.mykidong.com";
-		String[] brokerTokens = brokers.split(",");
-		List<String> brokerList = Arrays.asList(brokerTokens);
-		
+	
 		// kafka broker port.
 		int brokerPort = 9092;
 		
@@ -51,7 +46,6 @@ public class KafkaSimpleReceiverTest {
 		
 		// topic list.
 		String topics = "item-view-event,cart-event,order-event,relevance-event,impression-event";		
-		String[] topicTokens = topics.split(",");
 		
 		// partition count per topic.
 		int partitionCount = 2;
@@ -76,14 +70,14 @@ public class KafkaSimpleReceiverTest {
 		JavaStreamingContext ssc = new JavaStreamingContext(ctx, new Duration(duration));
 		
 		JavaDStream<EventStream> unionStreams = KafkaReceiverUtils.createStream(ssc, 
-																				topicTokens, 
+																				topics, 
 																				partitionCount, 
 																				zookeeperBasePath, 
 																				zookeeperQuorumList, 
-																				brokerList, 
+																				brokers, 
 																				brokerPort, 
 																				clientId, 
-																				fetchSizeBytes);	
+																				fetchSizeBytes);
 		
 		// DO SOMETHING, HERE!!!
 		

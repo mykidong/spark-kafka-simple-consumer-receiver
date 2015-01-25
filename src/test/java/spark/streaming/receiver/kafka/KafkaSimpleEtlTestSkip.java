@@ -3,7 +3,6 @@ package spark.streaming.receiver.kafka;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -78,8 +77,6 @@ public class KafkaSimpleEtlTestSkip {
 		
 		// kafka broker host list.
 		String brokers = "spark005-dev.mykidong.com,spark006-dev.mykidong.com";
-		String[] brokerTokens = brokers.split(",");
-		List<String> brokerList = Arrays.asList(brokerTokens);
 		
 		// kafka broker port.
 		int brokerPort = 9092;
@@ -91,7 +88,6 @@ public class KafkaSimpleEtlTestSkip {
 		
 		// topic list.
 		String topics = "item-view-event,cart-event,order-event,relevance-event,impression-event";		
-		String[] topicTokens = topics.split(",");
 		
 		// partition count per topic.
 		int partitionCount = 2;
@@ -124,6 +120,7 @@ public class KafkaSimpleEtlTestSkip {
 		// first, delete all the directories in which no _SUCCESS file exists, that is, it is assumed that the spark etl job failed while saving avro onto hdfs.
 		FileSystem fs = FileSystem.get(ctx.hadoopConfiguration());
 		
+		String[] topicTokens = topics.split(",");
 		for(String eventType : topicTokens)
 		{
 			String outPath = outputPathBase + "/" + eventType + "/hourly/" + dateFormatted + "/" ;
@@ -177,11 +174,11 @@ public class KafkaSimpleEtlTestSkip {
 		JavaStreamingContext ssc = new JavaStreamingContext(ctx, new Duration(duration));
 		
 		JavaDStream<EventStream> unionStreams = KafkaReceiverUtils.createStream(ssc, 
-																				topicTokens, 
+																				topics, 
 																				partitionCount, 
 																				zookeeperBasePath, 
 																				zookeeperQuorumList, 
-																				brokerList, 
+																				brokers, 
 																				brokerPort, 
 																				clientId, 
 																				fetchSizeBytes);
