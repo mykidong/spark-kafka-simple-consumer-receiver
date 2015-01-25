@@ -9,9 +9,8 @@ Because this kafka receiver is written in Kafka Simple Consumer API, kafka messa
 
 # Run Kafka Receiver Test Case
 In KafkaSimpleReceiverTest.java, the following line should be changed to suit your needs:
-
-  
-    // kafka broker host list.
+    		
+		// kafka broker host list.
 		String brokers = "spark005-dev.mykidong.com,spark006-dev.mykidong.com";
 		String[] brokerTokens = brokers.split(",");
 		List<String> brokerList = Arrays.asList(brokerTokens);
@@ -39,6 +38,22 @@ In KafkaSimpleReceiverTest.java, the following line should be changed to suit yo
 		
 		// micro batch cycle duration.
 		long duration = 20000;
+
+
+DStream generated from Kafka Receiver looks like this:
+
+
+		JavaDStream<EventStream> unionStreams = KafkaReceiverUtils.createStream(ssc, 
+											topicTokens, 
+											partitionCount, 
+											zookeeperBasePath, 
+											zookeeperQuorumList, 
+											brokerList, 
+											brokerPort, 
+											clientId, 
+											fetchSizeBytes);
+
+
 
 
 Run maven command like this:
