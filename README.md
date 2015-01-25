@@ -1,10 +1,9 @@
 # spark-kafka-simple-consumer-receiver
 Thanks to dibbhatt(https://github.com/dibbhatt/kafka-spark-consumer) .
 With the help of his ideas which I got from him when we discussed in emails, it could be done.
-This Spark Streaming Kafka Receiver is almost based on https://github.com/dibbhatt/kafka-spark-consumer .
 
 This Spark Streaming Kafka Receiver is alternative to the current Spark Streaming Kafka Receiver which is written in Kafka High Level Consumer API.
-Because this kafka receiver is written in Kafka Simple Consumer API, kafka message offset can be controlled with ease.
+Because this kafka receiver is written in Kafka Simple Consumer API, kafka message offset for kafka receiver worker node failure and driver node failure can be handled with ease.
 
 
 # Run Kafka Receiver Test Case
