@@ -1,7 +1,7 @@
 {
   "type": "record",
   "name": "EventList",
-  "namespace": "com.gsshop.polaris.domain.event.schema", 
+  "namespace": "spark.kafka.consumer.receiver.domain.event.schema", 
   "fields": [
     {
       "name": "eventType",
